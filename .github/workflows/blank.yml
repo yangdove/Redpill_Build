@@ -1,4 +1,4 @@
-name: Build DS920+ 6.2.4-25556 For UNAS_T201P
+name: Build DS918+ 6.2.4-25556 For UNAS_T201P
 
 on:
   schedule:
@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: DS920+
+          - platform: DS918+
             version: 6.2.4-25556
             machine: UNAS_T201P
             user: chenxudong2020
@@ -53,7 +53,7 @@ jobs:
           popd
           
           cp -f type.sh /home/runner/redpill-load
-          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds920p_user_config.json -O /home/runner/redpill-load/ds920p_user_config.json
+          wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/config/${{matrix.machine}}_ds918p_user_config.json -O /home/runner/redpill-load/ds918p_user_config.json
           # 使用wjz304的lkm
           wget https://raw.githubusercontent.com/wjz304/rp-ext/main/lkms/rp-geminilake-4.4.59-prod.ko.gz
           gunzip ./rp-geminilake-4.4.59-prod.ko.gz
@@ -70,7 +70,7 @@ jobs:
       - name: 编译DTB
         run: |
           cd /home/runner/redpill-load
-          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+          chkurl=https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds918p.dts
           HTTP_CODE=`curl -o /dev/null -s --head -w "%{http_code}" "${chkurl}"`
           if [ ${HTTP_CODE} -ne 200 ]
           then
@@ -79,13 +79,13 @@ jobs:
             ./ext-manager.sh add ${lkmext}/addons/dtbpatch/rpext-index.json
           else
             echo "下载DTS文件"
-            wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds920p.dts
+            wget https://raw.githubusercontent.com/${{matrix.user}}/Redpill_Build/master/dts/${{matrix.machine}}_ds918p.dts
             wget https://raw.githubusercontent.com/pocopico/rp-ext/main/redpill-dtb-static/releases/dtc
             chmod +x ./dtc
             echo "编译DTS为DTB"
-            ./dtc -I dts -O dtb -o ./ds920p.dtb ./${{matrix.machine}}_ds920p.dts
+            ./dtc -I dts -O dtb -o ./ds918p.dtb ./${{matrix.machine}}_ds918p.dts
             echo "复制编译好的DTB文件"
-            sudo cp ./ds920p.dtb ext/dtbstatic/releases/user_model.dtb
+            sudo cp ./ds918p.dtb ext/dtbstatic/releases/user_model.dtb
             dtbhash="`sha256sum ext/dtbstatic/releases/user_model.dtb | awk -F' ' '{print$1}'`"
             sed -i "s|@@@PATH@@@|${PWD}|g" ext/dtbstatic/rpext-index.json ext/dtbstatic/recipes/universal.json
             sed -i "s|@@@HASH@@@|${dtbhash}|g" ext/dtbstatic/recipes/universal.json
@@ -96,7 +96,7 @@ jobs:
         run: |
           cd /home/runner/redpill-load
           sed -i 's/\/images\/redpill\-/\/images\/${{matrix.machine}}\-/g' ./build-loader.sh
-          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds920p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
+          sudo BRP_JUN_MOD=0 BRP_DEBUG=1 BRP_USER_CFG=ds918p_user_config.json BRP_PLATFORM_KVER=geminilake-4.4.59 ./build-loader.sh '${{matrix.platform}}' '${{matrix.version}}'
       - name: 上传固件GitHub
         uses: actions/upload-artifact@master
         if: always()
